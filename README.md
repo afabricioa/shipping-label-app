@@ -78,8 +78,8 @@ This starts a MySQL 8.4 container with the following configuration:
 
 ```text
 Database: shipping_app
-Username: shipping_user
-Password: shipping_password
+Username: admin
+Password: admin
 Host: localhost
 Port: 3306
 ```
@@ -125,14 +125,14 @@ DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=shipping_app
-DB_USERNAME=shipping_user
-DB_PASSWORD=shipping_password
+DB_USERNAME=admin
+DB_PASSWORD=admin
 ```
 
 Configure EasyPost:
 
 ```env
-EASYPOST_API_KEY=your_easypost_api_key
+EASYPOST_API_KEY=easy_post_secret_key_passed_by_email
 EASYPOST_BASE_URL=https://api.easypost.com/v2
 ```
 
@@ -332,13 +332,13 @@ This ensures that a user cannot access another user's shipping labels by simply 
 
 ---
 
-# Assumptions
+# What would I do next?
 
-The assignment leaves some implementation details open, so the following assumptions were made for this prototype.
+It was implemented a simple MVP version with basic functionalities and not many verifications.
 
 ### USPS service selection
 
-The user is not asked to select a USPS service.
+The user can't select the service (USPS), it is set by default.
 
 Instead, the backend:
 
@@ -356,7 +356,7 @@ The country is therefore fixed to `US` in the frontend and validated by the back
 
 ### Address fields
 
-The prototype uses:
+The prototype uses as the same that are used in EasyPost API:
 
 * Name
 * Street
@@ -365,8 +365,6 @@ The prototype uses:
 * ZIP Code
 * Phone
 * Email
-
-A second street/address line is intentionally not included to keep the prototype focused.
 
 ### Package units
 
@@ -392,9 +390,7 @@ The main application relationship is:
 
 ```text
 User
- │
- │ 1:N
- ▼
+ 1:N
 ShippingLabel
 ```
 
@@ -413,6 +409,8 @@ The shipping label stores information such as:
 * PDF label URL
 * Status
 * Creation timestamp
+
+EasyPost API returns status as UNKNOW then I set as PURCHASED after completion.
 
 The backend always retrieves labels through the authenticated user:
 
@@ -496,7 +494,7 @@ For a production application, I would evaluate a more robust authentication/sess
 
 The shipping label history currently loads all labels.
 
-For a production application, I would add server-side pagination and filtering.
+For a production application, I would add server-side pagination and filtering by date, service, some ordering by price.
 
 ### 7. Idempotency and failure recovery
 
@@ -507,56 +505,6 @@ A production implementation should account for scenarios where:
 * EasyPost successfully purchases postage but the database save fails;
 * the client retries a request;
 * network failures occur after the purchase.
-
-Idempotency keys and a more explicit shipment state machine would help prevent duplicate purchases and make recovery safer.
-
-### 8. Production infrastructure
-
-For production, I would also add:
-
-* HTTPS
-* Secure secret management
-* Proper CORS configuration
-* Application logging
-* Monitoring
-* Rate limiting
-* CI/CD
-* Database backups
-
----
-
-# Project Structure
-
-```text
-shipping-turno-app/
-│
-├── backend/
-│   ├── app/
-│   │   ├── Http/
-│   │   │   ├── Controllers/
-│   │   │   └── Requests/
-│   │   ├── Models/
-│   │   └── Services/
-│   │       └── EasyPost/
-│   ├── database/
-│   │   └── migrations/
-│   ├── routes/
-│   │   └── api.php
-│   ├── .env
-│   └── ...
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   └── types/
-│   ├── .env
-│   └── ...
-│
-├── docker-compose.yml
-└── README.md
-```
 
 ---
 
@@ -643,5 +591,3 @@ This project was intentionally kept relatively small and focused on the core req
 * Persistent label history
 * React user interface
 * MySQL persistence
-
-The implementation favors simplicity and clear separation of responsibilities over introducing additional infrastructure or abstractions that are not necessary for the prototype.

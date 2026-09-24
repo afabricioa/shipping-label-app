@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import ShippingLabels from './pages/ShippingLabels';
 import { useAuth } from './context/AuthContext';
 import NewShippingLabel from './pages/NewShippingLabel';
+import Register from './pages/Register';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -64,7 +65,12 @@ export default function App() {
                       <NewShippingLabel />
                   </ProtectedRoute>
               }
-          />
+            />
+
+            <Route
+                path="/register"
+                element={<Register />}
+            />
         </Routes>
     );
 }

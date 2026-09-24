@@ -99,6 +99,16 @@ export default function Login() {
                                 : 'Sign in'}
                         </button>
                     </form>
+                    <div className="login-footer">
+                        <span>Don't have an account?</span>
+
+                        <button
+                            type="button"
+                            onClick={() => navigate('/register')}
+                        >
+                            Create account
+                        </button>
+                    </div>
                 </div>
             </div>
         </main>
