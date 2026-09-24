@@ -330,60 +330,6 @@ Shipping labels are always queried through the authenticated user.
 
 This ensures that a user cannot access another user's shipping labels by simply changing the label ID.
 
----
-
-# What would I do next?
-
-It was implemented a simple MVP version with basic functionalities and not many verifications.
-
-### USPS service selection
-
-The user can't select the service (USPS), it is set by default.
-
-Instead, the backend:
-
-* retrieves the available EasyPost rates;
-* filters the rates to USPS;
-* automatically selects the cheapest USPS rate.
-
-This keeps the prototype simple while still providing a real shipping label.
-
-### United States only
-
-Both origin and destination addresses are restricted to the United States.
-
-The country is therefore fixed to `US` in the frontend and validated by the backend.
-
-### Address fields
-
-The prototype uses as the same that are used in EasyPost API:
-
-* Name
-* Street
-* City
-* State
-* ZIP Code
-* Phone
-* Email
-
-### Package units
-
-Package dimensions are entered in inches and weight is entered in ounces.
-
-### Purchased timestamp
-
-The `shipping_labels.created_at` timestamp is used as the purchase timestamp.
-
-The database record is created only after the EasyPost shipment has been successfully purchased, so this timestamp represents when the label was persisted after purchase.
-
-### Authentication
-
-Laravel Sanctum personal access tokens are used for API authentication.
-
-For the scope of this prototype, the token is stored by the frontend and sent as a Bearer token.
-
----
-
 # Data Model
 
 The main application relationship is:
@@ -443,68 +389,96 @@ Server-side validation remains the authoritative validation layer.
 
 # What I'd Do Next
 
-Given more development time, I would consider the following improvements:
+The current implementation focuses on the core requirements of the assignment and was intentionally kept simple to fit the scope of an MVP.
 
-### 1. Better EasyPost error handling
+Given more development time, I would improve the application in the following areas:
 
-Add dedicated handling for EasyPost API errors and return more user-friendly messages to the frontend.
+### 1. More robust data validation
+
+Improve both frontend and backend validation to provide more detailed feedback to users.
 
 For example:
 
-```text
-Unable to generate the label because the address could not be validated.
-```
+* More specific validation messages for each address field
+* Stronger validation for ZIP codes and phone numbers
+* Additional validation for package dimensions and weight
+* Better handling of invalid or incomplete addresses
+* Validation of business rules before sending the request to EasyPost
 
-instead of exposing a generic API error.
+The backend would remain the authoritative validation layer, while the frontend would provide immediate feedback and a better user experience.
 
-### 2. Label details page
+### 2. Shipping label filters
 
-Instead of opening the label immediately after generation, add a dedicated label details page containing:
+Add filters to the shipping label history table to make it easier to find previously generated labels.
 
-* Shipping information
-* Selected USPS service
-* Price
+Possible filters include:
+
+* Date range
+* USPS service
+* Status
+* Price range
 * Tracking number
+
+I would also add server-side pagination as the number of labels grows.
+
+### 3. Label preview modal
+
+Instead of immediately opening the generated label in a new browser tab, I would add a modal to preview the shipping label directly inside the application.
+
+The modal could provide:
+
 * Label preview
+* Tracking number
+* USPS service
+* Shipping price
 * Print button
+* Option to open/download the original label
 
-### 3. Better address validation
+This would provide a smoother workflow while keeping the user on the shipping label history page.
 
-Integrate address verification so invalid or incomplete addresses can be detected before purchasing postage.
+### 4. Better EasyPost error handling
 
-### 4. Automated tests
+Add dedicated handling for EasyPost API errors and return more user-friendly messages to the frontend.
 
-Add:
+For example, instead of displaying a generic error, the application could explain that the address could not be validated or that no USPS rate is available.
 
-* Laravel feature tests for authentication
-* Shipping label API tests
-* Authorization/ownership tests
-* EasyPost service tests with mocked HTTP responses
-* React component tests for the main user flows
+### 5. Automated tests
 
-A particularly important test would verify that one user cannot access another user's labels.
+Add automated tests covering the main application flows, including:
 
-### 5. Improved authentication persistence
+* User registration and authentication
+* Shipping label creation
+* EasyPost API integration using mocked responses
+* Shipping label ownership and authorization
+* Validation rules
+* React form and table behavior
 
-The current prototype uses a client-side token stored in browser storage.
+A particularly important test would verify that one user cannot access another user's shipping labels.
 
-For a production application, I would evaluate a more robust authentication/session strategy depending on the deployment architecture and security requirements.
+### 6. Idempotency and failure recovery
 
-### 6. Pagination
+Shipping label creation involves an external API and a postage purchase, so the production implementation should handle partial failures more carefully.
 
-The shipping label history currently loads all labels.
+For example:
 
-For a production application, I would add server-side pagination and filtering by date, service, some ordering by price.
+* EasyPost successfully purchases the postage but the database save fails
+* The client retries the request
+* A network error occurs after the purchase but before the client receives the response
 
-### 7. Idempotency and failure recovery
+An idempotency strategy and more explicit shipment states could help prevent duplicate purchases and make these scenarios recoverable.
 
-Shipping purchases involve an external payment/postage operation.
+### 7. Improved authentication and security
 
-A production implementation should account for scenarios where:
+For a production application, I would review the current token-based authentication approach and consider a more secure session/token strategy depending on the deployment architecture.
 
-* EasyPost successfully purchases postage but the database save fails;
-* the client retries a request;
-* network failures occur after the purchase.
+I would also add production-level security configurations such as:
+
+* HTTPS
+* Secure secret management
+* Proper CORS configuration
+* API rate limiting
+* Security-focused logging and monitoring
+
 
 ---
 
