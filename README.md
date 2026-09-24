@@ -436,13 +436,19 @@ The modal could provide:
 
 This would provide a smoother workflow while keeping the user on the shipping label history page.
 
-### 4. Better EasyPost error handling
+### 4. Further separation of business logic
+
+As the application grows, I would further separate business rules from the controllers by moving use-case logic into dedicated application services.
+
+This would keep controllers focused on handling HTTP requests and responses, while services would be responsible for business rules such as USPS rate selection and shipping label creation.
+
+### 5. Better EasyPost error handling
 
 Add dedicated handling for EasyPost API errors and return more user-friendly messages to the frontend.
 
 For example, instead of displaying a generic error, the application could explain that the address could not be validated or that no USPS rate is available.
 
-### 5. Automated tests
+### 6. Automated tests
 
 Add automated tests covering the main application flows, including:
 
@@ -455,7 +461,7 @@ Add automated tests covering the main application flows, including:
 
 A particularly important test would verify that one user cannot access another user's shipping labels.
 
-### 6. Idempotency and failure recovery
+### 7. Idempotency and failure recovery
 
 Shipping label creation involves an external API and a postage purchase, so the production implementation should handle partial failures more carefully.
 
@@ -467,7 +473,7 @@ For example:
 
 An idempotency strategy and more explicit shipment states could help prevent duplicate purchases and make these scenarios recoverable.
 
-### 7. Improved authentication and security
+### 8. Improved authentication and security
 
 For a production application, I would review the current token-based authentication approach and consider a more secure session/token strategy depending on the deployment architecture.
 
